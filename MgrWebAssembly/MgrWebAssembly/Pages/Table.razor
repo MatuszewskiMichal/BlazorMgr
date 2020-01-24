@@ -1,0 +1,330 @@
+﻿@page "/table"
+@using CsvHelper
+@using System.IO
+@using System.Text
+@using MgrWebAssembly.Services
+@inject HttpClient httpClient
+@inject CsvService csvService
+
+<style>
+    .filter-by {
+        text-decoration: underline;
+        color: blue;
+    }
+
+    .no-wrap {
+        white-space: nowrap;
+    }
+
+    .text-align-right {
+        text-align: right;
+    }
+</style>
+
+<h3>Customers Table</h3>
+@*<AuthorizeView>
+    <Authorized>*@
+@if (customers == null)
+{
+    <p><em>Loading customer table...</em></p>
+}
+else
+{
+    <p style="float:left">
+        <button class="btn btn-primary"
+            @onclick="OpenPopup">
+            Add New Customer
+        </button>
+
+        <button class="btn btn-primary"
+            @onclick="Export">
+            Export to Excel
+        </button>
+    </p>
+
+    <Pagination Class="float-right">
+        <PaginationItem IsDisabled="this.currentPage == 0">
+            <PaginationLink Clicked="@PrevPage">
+                <span aria-hidden="true">«</span>
+            </PaginationLink>
+        </PaginationItem>
+        @for (int i = 0; i <= this.totalPages; i++)
+        {
+            int pageNumber = i;
+            <PaginationItem IsActive="pageNumber == this.currentPage">
+                <PaginationLink Clicked="@(e => GetPage(pageNumber))">
+                    @(pageNumber + 1)
+                </PaginationLink>
+            </PaginationItem>
+        }
+        <PaginationItem IsDisabled="this.totalPages == this.currentPage">
+            <PaginationLink Clicked="@NextPage">
+                <span aria-hidden="true">»</span>
+            </PaginationLink>
+        </PaginationItem>
+    </Pagination>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="th filter-by" @onclick="@(() => SortTable("CustomerId"))">
+                    CustomerID
+                </th>
+                <th>CompanyName</th>
+                <th>ContactName</th>
+                <th>CompanyTitle</th>
+                <th>Address</th>
+                <th>City</th>
+                <th>Region</th>
+                <th>PostalCode</th>
+                <th>Country</th>
+                <th>Phone</th>
+                <th>Fax</th>
+            </tr>
+            <tr>
+                <th></th>
+                <th>
+                    <TextEdit Text="@FilterCompanyName" Placeholder="..." TextChanged="@OnFilterByCompanyChanged" />
+                </th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th>
+                    <TextEdit Text="@FilterByCity" Placeholder="..." TextChanged="@OnFilterByCityChanged" />
+                </th>
+                <th></th>
+                <th></th>
+                <th>
+                    <TextEdit Text="@FilterByCountry" Placeholder="..." TextChanged="@OnFilterByCountryChanged" />
+                </th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in customers)
+            {
+                <tr>
+                    <td>@c.CustomerId</td>
+                    <td>@c.CompanyName</td>
+                    <td>@c.ContactName</td>
+                    <td>@c.ContactTitle</td>
+                    <td>@c.Address</td>
+                    <td>@c.City</td>
+                    <td>@c.Region</td>
+                    <td>@c.PostalCode</td>
+                    <td>@c.Country</td>
+                    <td>@c.Phone</td>
+                    <td>@c.Fax</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (ShowPopup)
+{
+    <div class="modal" tabindex="-1" style="display:block" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Add New customer</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group row">
+                        <label for="contactName" class="col-sm-3 no-wrap col-form-label text-align-right">Contact Name:</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" id="contactName" @bind="addCustomer.ContactName"><br />
+                        </div>
+                        <label for="companyName" class="col-sm-3 no-wrap col-form-label text-align-right">Company Name:</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" id="companyName" @bind="addCustomer.CompanyName"><br />
+                        </div>
+                        <label for="contactTitle" class="col-sm-3 no-wrap col-form-label text-align-right">Contact title:</label>
+                        <div class="col-sm-9">
+                            <select class="form-control" id="contactTitle" @bind="addCustomer.ContactTitle">
+                                <option>Accounting Manager</option>
+                                <option>Assistant Sales Agent</option>
+                                <option>Assistant Sales Representative</option>
+                                <option>Marketing Assistant</option>
+                                <option>Marketing Manager</option>
+                                <option>Order Administrator</option>
+                                <option>Owner/Marketing Assistant</option>
+                            </select><br />
+                        </div>
+                        <label for="adress" class="col-sm-3 no-wrap col-form-label text-align-right">Adress:</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" id="adress" @bind="addCustomer.Address"><br />
+                        </div>
+                        <label for="city" class="col-sm-3 no-wrap col-form-label text-align-right">City:</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" id="city" @bind="addCustomer.City"><br />
+                        </div>
+                        <label for="region" class="col-sm-3 no-wrap col-form-label text-align-right">Region:</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" id="region" @bind="addCustomer.Region"><br />
+                        </div>
+                        <label for="postalCode" class="col-sm-3 no-wrap col-form-label text-align-right">Postal Code:</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" id="postalCode" @bind="addCustomer.PostalCode"><br />
+                        </div>
+                        <label for="country" class="col-sm-3 no-wrap col-form-label text-align-right">Country:</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" id="country" @bind="addCustomer.Country"><br />
+                        </div>
+                        <label for="phone" class="col-sm-3 no-wrap col-form-label text-align-right">Phone:</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" id="phone" @bind="addCustomer.Phone"><br />
+                        </div>
+                        <label for="fax" class="col-sm-3 no-wrap col-form-label text-align-right">Fax:</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" id="fax" @bind="addCustomer.Fax"><br />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary"
+                                @onclick="SaveCustomer">
+                            Save
+                        </button>
+                        <button type="button" class="btn btn-secondary"
+                                @onclick="ClosePopup">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@*</Authorized>
+
+        <NotAuthorized>
+            <p>Proszę się zalogować!!</p>
+        </NotAuthorized>
+    </AuthorizeView>*@
+
+@code {
+    string baseUrl = "https://localhost:44347/";
+    List<Customers> customers;
+    bool ShowPopup = false;
+    int currentPage = 1;
+    int totalPages = 0;
+
+    string FilterCompanyName = "";
+    string FilterByCity = "";
+    string FilterByCountry = "";
+
+    Customers addCustomer = new Customers();
+
+    public void ClosePopup()
+    {
+        ShowPopup = false;
+    }
+
+    public void OpenPopup()
+    {
+        ShowPopup = true;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await this.GetPage(0, 10);
+    }
+
+    public async Task SaveCustomer()
+    {
+        ClosePopup();
+        Guid id = Guid.NewGuid();
+        string customerId = id.ToString();
+        addCustomer.CustomerId = customerId.Substring(customerId.Length - 4);
+        string request = $"{baseUrl}api/customers";
+        await httpClient.SendJsonAsync(HttpMethod.Post, request, addCustomer);
+        addCustomer = new Customers();
+        customers = await httpClient.GetJsonAsync<List<Customers>>($"{baseUrl}api/customers");
+    }
+
+    public async void Export()
+    {
+        var writer = new StringWriter();
+        var csv = new CsvWriter(writer);
+
+        csv.WriteRecords(customers);
+
+        await csvService.SaveAsAsync("CustomersCsv.csv", Encoding.ASCII.GetBytes(writer.ToString()));
+    }
+
+    private bool IsSortedAscending;
+    private string CurrentSortColumn;
+
+    public void SortTable(string columnName)
+    {
+        if (columnName != CurrentSortColumn)
+        {
+            customers = customers.OrderBy(x => x.GetType().GetProperty(columnName).GetValue(x, null)).ToList();
+            CurrentSortColumn = columnName;
+            IsSortedAscending = true;
+        }
+        else
+        {
+            if (IsSortedAscending)
+            {
+                customers = customers.OrderByDescending(x => x.GetType().GetProperty(columnName).GetValue(x, null)).ToList();
+            }
+            else
+            {
+                customers = customers.OrderBy(x => x.GetType().GetProperty(columnName).GetValue(x, null)).ToList();
+            }
+
+            //Toggle this boolean
+            IsSortedAscending = !IsSortedAscending;
+        }
+    }
+
+    async void PrevPage()
+    {
+        this.GetPage(currentPage - 1);
+    }
+
+    async void NextPage()
+    {
+        this.GetPage(currentPage + 1);
+    }
+
+    private async Task GetPage(int page, int pageSize = 10)
+    {
+        var allCustomers = await httpClient.GetJsonAsync<List<Customers>>($"{baseUrl}api/customers");
+        var cc = allCustomers;
+
+        if(!string.IsNullOrWhiteSpace(this.FilterCompanyName))
+            cc = cc.Where(x => x.CompanyName.StartsWith(this.FilterCompanyName)).ToList();
+
+        if(!string.IsNullOrWhiteSpace(this.FilterByCountry))
+            cc = cc.Where(x => x.Country.StartsWith(this.FilterByCountry)).ToList();
+
+        if(!string.IsNullOrWhiteSpace(this.FilterByCity))
+            cc = cc.Where(x => x.City.StartsWith(this.FilterByCity)).ToList();
+
+        this.customers = cc.Skip(page * pageSize).Take(pageSize).ToList();
+
+        this.totalPages = cc.Count / pageSize;
+        this.currentPage = page;
+    }
+
+    private async Task OnFilterByCompanyChanged(string value)
+    {
+        this.FilterCompanyName = value;
+        await this.GetPage(this.currentPage);
+    }
+
+    private async Task OnFilterByCityChanged(string value)
+    {
+        this.FilterByCity = value;
+        await this.GetPage(this.currentPage);
+    }
+
+    private async Task OnFilterByCountryChanged(string value)
+    {
+        this.FilterByCountry = value;
+        await this.GetPage(this.currentPage);
+    }
+}

@@ -1,0 +1,8 @@
+C:\Users\Michal\source\repos\MgrWebAssembly\MgrWebAssemblyLibrary\bin\Debug\netstandard2.0\MgrWebAssemblyLibrary.deps.json
+C:\Users\Michal\source\repos\MgrWebAssembly\MgrWebAssemblyLibrary\bin\Debug\netstandard2.0\MgrWebAssemblyLibrary.dll
+C:\Users\Michal\source\repos\MgrWebAssembly\MgrWebAssemblyLibrary\obj\Debug\netstandard2.0\MgrWebAssemblyLibrary.AssemblyInfoInputs.cache
+C:\Users\Michal\source\repos\MgrWebAssembly\MgrWebAssemblyLibrary\obj\Debug\netstandard2.0\MgrWebAssemblyLibrary.AssemblyInfo.cs
+C:\Users\Michal\source\repos\MgrWebAssembly\MgrWebAssemblyLibrary\bin\Debug\netstandard2.0\MgrWebAssemblyLibrary.pdb
+C:\Users\Michal\source\repos\MgrWebAssembly\MgrWebAssemblyLibrary\obj\Debug\netstandard2.0\MgrWebAssemblyLibrary.dll
+C:\Users\Michal\source\repos\MgrWebAssembly\MgrWebAssemblyLibrary\obj\Debug\netstandard2.0\MgrWebAssemblyLibrary.pdb
+C:\Users\Michal\source\repos\MgrWebAssembly\MgrWebAssemblyLibrary\obj\Debug\netstandard2.0\MgrWebAssemblyLibrary.csprojAssemblyReference.cache

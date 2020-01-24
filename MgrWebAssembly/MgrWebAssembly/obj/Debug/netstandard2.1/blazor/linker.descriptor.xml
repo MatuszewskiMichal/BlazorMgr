@@ -1,0 +1,5 @@
+﻿<linker>
+  <assembly fullname="MgrWebAssembly">
+    <type fullname="*" required="true" />
+  </assembly>
+</linker>

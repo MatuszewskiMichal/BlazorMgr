@@ -1,0 +1,124 @@
+﻿@page "/twoTable"
+@inject HttpClient httpClient
+
+<style>
+    .selected-row td {
+        background: #8db802;
+        color: blue;
+    }
+</style>
+<h3>Select employee</h3>
+
+
+@if (employees == null)
+{
+    <p><em>Loading employee table...</em></p>
+}
+else
+{
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Last Name</th>
+            <th>First Name</th>
+            <th>Title</th>
+            <th>Title Of Courtesy</th>
+            <th>Birth Date</th>
+            <th>HireDate</th>
+            <th>Address</th>
+            <th>City</th>
+            <th>Region</th>
+            <th>PostalCode</th>
+            <th>Country</th>
+            <th>HomePhone</th>
+            <th>Extension</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var e in employees)
+        {
+            <tr @onclick="@(async e1 => await GetOrders(e.EmployeeId))" class="@(this.selectedEmploeeId == e.EmployeeId ? "selected-row": "")">
+                <td>@e.LastName</td>
+                <td>@e.FirstName</td>
+                <td>@e.Title</td>
+                <td>@e.TitleOfCourtesy</td>
+                <td>@e.BirthDate</td>
+                <td>@e.HireDate</td>
+                <td>@e.Address</td>
+                <td>@e.City</td>
+                <td>@e.Region</td>
+                <td>@e.PostalCode</td>
+                <td>@e.Country</td>
+                <td>@e.HomePhone</td>
+                <td>@e.Extension</td>
+            </tr>
+        }
+    </tbody>
+</table>
+}
+<div>
+    @if (orders == null)
+    {
+        <p><em>Loading employee orders...</em></p>
+    }
+    else
+    {
+        <h3>Orders</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Order date</th>
+                        <th>RequiredDate</th>
+                        <th>ShippedDate</th>
+                        <th>ShipVia</th>
+                        <th>Freight</th>
+                        <th>Ship Name</th>
+                        <th>Ship Address</th>
+                        <th>Ship City</th>
+                        <th>Ship Region</th>
+                        <th>Ship PostalCode</th>
+                        <th>Ship Country</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var o in orders)
+                    {
+                        <tr>
+                            <td>@o.OrderDate</td>
+                            <td>@o.RequiredDate</td>
+                            <td>@o.ShippedDate</td>
+                            <td>@o.ShipVia</td>
+                            <td>@o.Freight</td>
+                            <td>@o.ShipName</td>
+                            <td>@o.ShipAddress</td>
+                            <td>@o.ShipCity</td>
+                            <td>@o.ShipRegion</td>
+                            <td>@o.ShipPostalCode</td>
+                            <td>@o.ShipCountry</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+    }
+</div>
+@code {
+
+    string baseUrl = "https://localhost:44347/";
+
+    int selectedEmploeeId = -1;
+    List<Employees> employees;
+    List<Orders> orders;
+
+    protected override async Task OnInitializedAsync()
+    {
+        employees = await httpClient.GetJsonAsync<List<Employees>>($"{baseUrl}api/employees");
+        orders = new List<Orders>();
+    }
+
+    private async Task GetOrders(int employeeID)
+    {
+        selectedEmploeeId = employeeID;
+        orders = await httpClient.GetJsonAsync<List<Orders>>($"{baseUrl}api/orders?id={employeeID}");
+    }
+}
